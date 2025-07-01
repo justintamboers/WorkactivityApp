@@ -1,23 +1,27 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using WorkactivityApp.Data;
 using WorkactivityApp.Models;
+using WorkactivityApp.Models.ViewModels;
 
 namespace WorkactivityApp.Controllers
 {
     public class ProjectController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ProjectController(ApplicationDbContext context)
+        public ProjectController(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
+
 
         // GET: Project
         public async Task<IActionResult> Index()
@@ -128,8 +132,6 @@ namespace WorkactivityApp.Controllers
             return View(project);
         }
 
-
-        // GET: Project/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -147,7 +149,6 @@ namespace WorkactivityApp.Controllers
             return View(project);
         }
 
-        // POST: Project/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -161,6 +162,45 @@ namespace WorkactivityApp.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpGet]
+        public async Task<IActionResult> AddProjectTime(int id)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null) return NotFound();
+
+            ViewData["ProjectId"] = id; 
+            return View("Add");
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddProjectTime(int id, AddedTimeViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var project = await _context.Projects
+                .Include(p => p.Time)
+                .ThenInclude(t => t.AddedTimes)
+                .FirstOrDefaultAsync(p => p.ProjectId == id);
+
+            if (project == null || project.Time == null)
+                return NotFound();
+
+            var addedTime = new AddedTime
+            {
+                StartAddedTime = model.StartAddedTime,
+                EndAddedTime = model.EndAddedTime
+            };
+
+            project.Time.AddedTimes.Add(addedTime);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
 
         private bool ProjectExists(int id)
         {

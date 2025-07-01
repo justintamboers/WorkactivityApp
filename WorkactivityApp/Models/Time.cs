@@ -7,16 +7,15 @@ namespace WorkactivityApp.Models
     [Owned]
     public class Time
     {
-        [Display(Name = "Start Time")]
         public DateTime StartTime { get; set; }
-
-        [Display(Name = "End Time")]
         public DateTime EndTime { get; set; }
 
+        public List<AddedTime> AddedTimes { get; set; } = new();
+
         [NotMapped]
-        [Display(Name = "Duration")]
-        public TimeSpan Duration => EndTime - StartTime;
+        public TimeSpan InitialDuration => EndTime - StartTime;
+
+        [NotMapped]
+        public TimeSpan Duration => InitialDuration + TimeSpan.FromTicks(AddedTimes.Sum(a => a.Duration.Ticks));
     }
-
-
 }

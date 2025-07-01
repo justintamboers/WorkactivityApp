@@ -1,0 +1,22 @@
+﻿@model WorkactivityApp.Models.ViewModels.AddedTimeViewModel
+
+<h1>Add Time</h1>
+
+<form asp-action="AddProjectTime" asp-route-id="@ViewData["ProjectId"]" method="post">
+    <div class="form-group">
+        <label>Start Added Time</label>
+        <input asp-for="StartAddedTime" class="form-control" type="datetime-local" />
+        <span asp-validation-for="StartAddedTime" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>End Added Time</label>
+        <input asp-for="EndAddedTime" class="form-control" type="datetime-local" />
+        <span asp-validation-for="EndAddedTime" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <input type="submit" value="Add Time Now" class="btn btn-primary" />|
+        <a asp-action="Index">Back to List</a>
+    </div>
+</form>

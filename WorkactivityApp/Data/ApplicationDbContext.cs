@@ -12,6 +12,7 @@ namespace WorkactivityApp.Data
 
             }
 
+
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
                 base.OnModelCreating(modelBuilder);
@@ -21,11 +22,24 @@ namespace WorkactivityApp.Data
                     {
                         t.Property(p => p.StartTime).HasColumnName("StartTime");
                         t.Property(p => p.EndTime).HasColumnName("EndTime");
+
+                        // Configure AddedTimes as owned collection inside Time
+                        t.OwnsMany(tt => tt.AddedTimes, at =>
+                        {
+                            at.WithOwner().HasForeignKey("TimeOwnerId");
+                            at.Property<int>("Id");
+                            at.HasKey("Id");
+
+                            at.Property(a => a.StartAddedTime).HasColumnName("StartAddedTime");
+                            at.Property(a => a.EndAddedTime).HasColumnName("EndAddedTime");
+                        });
                     });
             }
 
 
-        public DbSet<WorkactivityApp.Models.User> Users { get; set; }
+
+            public DbSet<AddedTime> AddedTimes { get; set; }
+            public DbSet<WorkactivityApp.Models.User> Users { get; set; }
             public DbSet<WorkactivityApp.Models.Project> Projects { get; set; }
         }
     }

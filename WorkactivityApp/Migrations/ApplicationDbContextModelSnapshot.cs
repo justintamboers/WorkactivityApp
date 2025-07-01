@@ -337,6 +337,37 @@ namespace WorkactivityApp.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("ProjectId");
+
+                            b1.OwnsMany("AddedTime", "AddedTimes", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int");
+
+                                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<DateTime>("EndAddedTime")
+                                        .HasColumnType("datetime2")
+                                        .HasColumnName("EndAddedTime");
+
+                                    b2.Property<DateTime>("StartAddedTime")
+                                        .HasColumnType("datetime2")
+                                        .HasColumnName("StartAddedTime");
+
+                                    b2.Property<int>("TimeOwnerId")
+                                        .HasColumnType("int");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("TimeOwnerId");
+
+                                    b2.ToTable("AddedTimes");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("TimeOwnerId");
+                                });
+
+                            b1.Navigation("AddedTimes");
                         });
 
                     b.Navigation("Time")

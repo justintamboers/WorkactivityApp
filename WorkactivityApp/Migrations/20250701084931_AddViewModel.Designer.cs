@@ -12,8 +12,8 @@ using WorkactivityApp.Data;
 namespace WorkactivityApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250612145810_initial")]
-    partial class initial
+    [Migration("20250701084931_AddViewModel")]
+    partial class AddViewModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -238,33 +238,9 @@ namespace WorkactivityApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TimeId")
-                        .HasColumnType("int");
-
                     b.HasKey("ProjectId");
 
-                    b.HasIndex("TimeId");
-
                     b.ToTable("Projects");
-                });
-
-            modelBuilder.Entity("WorkactivityApp.Models.Time", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Times");
                 });
 
             modelBuilder.Entity("WorkactivityApp.Models.User", b =>
@@ -345,13 +321,60 @@ namespace WorkactivityApp.Migrations
 
             modelBuilder.Entity("WorkactivityApp.Models.Project", b =>
                 {
-                    b.HasOne("WorkactivityApp.Models.Time", "Time")
-                        .WithMany()
-                        .HasForeignKey("TimeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.OwnsOne("WorkactivityApp.Models.Time", "Time", b1 =>
+                        {
+                            b1.Property<int>("ProjectId")
+                                .HasColumnType("int");
 
-                    b.Navigation("Time");
+                            b1.Property<DateTime>("EndTime")
+                                .HasColumnType("datetime2")
+                                .HasColumnName("EndTime");
+
+                            b1.Property<DateTime>("StartTime")
+                                .HasColumnType("datetime2")
+                                .HasColumnName("StartTime");
+
+                            b1.HasKey("ProjectId");
+
+                            b1.ToTable("Projects");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProjectId");
+
+                            b1.OwnsMany("AddedTime", "AddedTimes", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int");
+
+                                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<DateTime>("EndAddedTime")
+                                        .HasColumnType("datetime2")
+                                        .HasColumnName("EndAddedTime");
+
+                                    b2.Property<DateTime>("StartAddedTime")
+                                        .HasColumnType("datetime2")
+                                        .HasColumnName("StartAddedTime");
+
+                                    b2.Property<int>("TimeOwnerId")
+                                        .HasColumnType("int");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("TimeOwnerId");
+
+                                    b2.ToTable("AddedTimes");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("TimeOwnerId");
+                                });
+
+                            b1.Navigation("AddedTimes");
+                        });
+
+                    b.Navigation("Time")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

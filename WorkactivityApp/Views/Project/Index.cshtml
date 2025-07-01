@@ -1,10 +1,10 @@
 ﻿@model IEnumerable<WorkactivityApp.Models.Project>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Project Management field";
 }
 
-<h1>Index</h1>
+<h1>Projects</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -18,7 +18,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Description)
             </th>
-            <th></th>
+            <th>
+                @Html.DisplayNameFor(model => model.Time.Duration)
+            </th>
         </tr>
     </thead>
     <tbody>
@@ -27,11 +29,14 @@
             <td>
                 @Html.DisplayFor(modelItem => item.ProjectName)
             </td>
-            <td>
+            <td style="max-width: 150px; overflow: hidden;">
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.ProjectId">Edit</a> |
+                @Html.DisplayFor(modelItem => item.Time.Duration)
+            </td>
+            <td>
+                <a asp-action="AddProjectTime" asp-route-id="@item.ProjectId">Add Time</a> |
                 <a asp-action="Details" asp-route-id="@item.ProjectId">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.ProjectId">Delete</a>
             </td>

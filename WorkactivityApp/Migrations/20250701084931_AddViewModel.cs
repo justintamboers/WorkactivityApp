@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkactivityApp.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class AddViewModel : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -51,17 +51,19 @@ namespace WorkactivityApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Times",
+                name: "Projects",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    ProjectId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    ProjectName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Times", x => x.Id);
+                    table.PrimaryKey("PK_Projects", x => x.ProjectId);
                 });
 
             migrationBuilder.CreateTable(
@@ -186,25 +188,30 @@ namespace WorkactivityApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Projects",
+                name: "AddedTimes",
                 columns: table => new
                 {
-                    ProjectId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ProjectName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TimeId = table.Column<int>(type: "int", nullable: false)
+                    StartAddedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndAddedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TimeOwnerId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Projects", x => x.ProjectId);
+                    table.PrimaryKey("PK_AddedTimes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Projects_Times_TimeId",
-                        column: x => x.TimeId,
-                        principalTable: "Times",
-                        principalColumn: "Id",
+                        name: "FK_AddedTimes_Projects_TimeOwnerId",
+                        column: x => x.TimeOwnerId,
+                        principalTable: "Projects",
+                        principalColumn: "ProjectId",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AddedTimes_TimeOwnerId",
+                table: "AddedTimes",
+                column: "TimeOwnerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -244,16 +251,14 @@ namespace WorkactivityApp.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Projects_TimeId",
-                table: "Projects",
-                column: "TimeId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AddedTimes");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -270,19 +275,16 @@ namespace WorkactivityApp.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Projects");
+                name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Projects");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "Times");
         }
     }
 }
