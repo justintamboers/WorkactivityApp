@@ -1,0 +1,45 @@
+﻿@model WorkactivityApp.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<h1>Login</h1>
+
+<h4>LoginUser</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Login">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="form-group">
+                <label asp-for="UserName" class="control-label"></label>
+                <input asp-for="UserName" class="form-control" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Login" class="btn btn-primary" />
+                <a class="btn btn-primary" asp-controller="Account" asp-action="FacebookLogin">Facebook</a>
+                <a class="btn btn-warning" asp-controller="Account" asp-action="GoogleLogin">Google</a>
+                <a class="btn btn-danger" asp-controller="Account" asp-action="DuendeLogin">Duende</a>
+            </div>
+            <div class="form-group">
+                <p>
+                    <a asp-controller="Account" asp-action="Register">Registreer een nieuwe gebruiker</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -2,6 +2,7 @@
     using Microsoft.EntityFrameworkCore;
     using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
 using WorkactivityApp.Models;
+using WorkactivityApp.ViewModels;
 
 namespace WorkactivityApp.Data
     {
