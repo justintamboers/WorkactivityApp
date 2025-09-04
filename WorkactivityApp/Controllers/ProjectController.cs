@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,19 +16,21 @@ namespace WorkactivityApp.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
 
-        public ProjectController(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        public ProjectController(ApplicationDbContext context, UserManager<User> userManager, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
 
 
         // GET: Project
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.Projects.ToListAsync());
-        }
+            public async Task<IActionResult> Index()
+            {
+                return View(await _context.Projects.ToListAsync());
+            }
 
         // GET: Project/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -170,7 +173,7 @@ namespace WorkactivityApp.Controllers
             if (project == null) return NotFound();
 
             ViewData["ProjectId"] = id; 
-            return View("Add");
+            return View("AddProjectTime");
 
         }
 
@@ -201,6 +204,42 @@ namespace WorkactivityApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> AddUser(int id)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null) return NotFound();
+
+            var users = await _userManager.Users.ToListAsync();
+
+            ViewData["Users"] = new SelectList(users, "Id", "UserName");
+            ViewData["ProjectId"] = id; 
+
+            return View("AddUserToProject");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddUser(int projectId, string userId)
+        {
+            var project = await _context.Projects
+                .Include(p => p.Users)
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+            if (project == null)
+                return NotFound();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound();
+
+            if (!project.Users.Any(u => u.Id == user.Id))
+            {
+                project.Users.Add((User)user);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
 
         private bool ProjectExists(int id)
         {

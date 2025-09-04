@@ -1,22 +1,23 @@
 ﻿using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Data;
 using System.Security.Claims;
-using WorkactivityApp.Models.ViewModels;
+using WorkactivityApp.Models;
 using WorkactivityApp.ViewModels;
 
 namespace WorkactivityApp.Controllers
 {
     public class AccountController : Controller
     {
-        UserManager<IdentityUser> _userManager;
-        SignInManager<IdentityUser> _signInManager;
-        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        UserManager<User> _userManager;
+        SignInManager<User> _signInManager;
+
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
         }
+
         #region Register
         [HttpGet]
         public IActionResult Register()
@@ -29,14 +30,18 @@ namespace WorkactivityApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                IdentityUser user = new IdentityUser();
-                user.UserName = model.UserName;
-                user.Email = model.Email;
+                User user = new User
+                {
+                    UserName = model.UserName,
+                    Email = model.Email
+                };
+
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, Roles.USER_ROLE);
+
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Home");
                 }
@@ -44,21 +49,22 @@ namespace WorkactivityApp.Controllers
                 {
                     foreach (IdentityError error in result.Errors)
                         ModelState.AddModelError("", error.Description);
+
                     return View(model);
                 }
             }
+
             return View(model);
         }
         #endregion
+
         #region Login
-        // GET: /Account/Login
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        // POST: /Account/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
@@ -66,17 +72,15 @@ namespace WorkactivityApp.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // try signing in the user
             var result = await _signInManager.PasswordSignInAsync(
                 model.UserName,
                 model.Password,
                 isPersistent: false,
-                lockoutOnFailure: true          // lock account after failures
+                lockoutOnFailure: true
             );
 
             if (result.Succeeded)
             {
-                // Redirect to returnUrl if present, else go to your Home controller
                 return RedirectToLocal(returnUrl ?? Url.Action("Index", "Home"));
             }
 
@@ -92,7 +96,6 @@ namespace WorkactivityApp.Controllers
             return View(model);
         }
 
-        // helper method
         private IActionResult RedirectToLocal(string? returnUrl)
         {
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -107,7 +110,6 @@ namespace WorkactivityApp.Controllers
 
         public IActionResult GoogleLogin()
         {
-            // absolute URL naar callback
             var redirectUrl = Url.Action("GoogleResponse", "Account", null, Request.Scheme);
             var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
             return new ChallengeResult(GoogleDefaults.AuthenticationScheme, properties);
@@ -124,9 +126,17 @@ namespace WorkactivityApp.Controllers
             if (!result.Succeeded)
             {
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                var userName = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email;
+                var userName = email;
 
-                var user = new IdentityUser { UserName = userName, Email = email, EmailConfirmed = true };
+                var existingUser = await _userManager.FindByEmailAsync(email);
+                if (existingUser != null)
+                {
+                    await _userManager.AddLoginAsync(existingUser, info);
+                    await _signInManager.SignInAsync(existingUser, false);
+                    return RedirectToAction("Index", "Home");
+                }
+
+                var user = new User { UserName = userName, Email = email, EmailConfirmed = true };
                 var createResult = await _userManager.CreateAsync(user);
                 if (createResult.Succeeded)
                 {
@@ -135,7 +145,10 @@ namespace WorkactivityApp.Controllers
                 }
                 else
                 {
-                    return RedirectToAction("Login");
+                    foreach (var error in createResult.Errors)
+                        ModelState.AddModelError("", error.Description);
+
+                    return View("Login");
                 }
             }
 
@@ -146,10 +159,10 @@ namespace WorkactivityApp.Controllers
         {
             return View();
         }
-
         #endregion
+
         #region Logout
-        [HttpGet] // allow GET requests
+        [HttpGet]
         public async Task<IActionResult> LogoutAsync()
         {
             await _signInManager.SignOutAsync();
@@ -163,7 +176,6 @@ namespace WorkactivityApp.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
         }
-
         #endregion
     }
 }

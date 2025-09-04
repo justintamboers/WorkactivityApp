@@ -1,4 +1,4 @@
-﻿namespace WorkactivityApp.ViewModels
+﻿namespace WorkactivityApp.Models
 {
     public static class Roles
     {

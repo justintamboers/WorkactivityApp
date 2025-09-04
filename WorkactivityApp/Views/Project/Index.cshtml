@@ -36,6 +36,7 @@
                 @Html.DisplayFor(modelItem => item.Time.Duration)
             </td>
             <td>
+                    <a asp-action="AddUser" asp-route-id="@item.ProjectId">Add User</a> |
                 <a asp-action="AddProjectTime" asp-route-id="@item.ProjectId">Add Time</a> |
                 <a asp-action="Details" asp-route-id="@item.ProjectId">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.ProjectId">Delete</a>

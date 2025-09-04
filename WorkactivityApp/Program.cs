@@ -2,6 +2,9 @@ using WorkactivityApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
+using WorkactivityApp.Models;
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +18,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 Console.WriteLine($"Connection String: {connectionString ?? "NULL - NOT FOUND"}");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-.AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -39,7 +42,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.User.AllowedUserNameCharacters =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
     options.User.RequireUniqueEmail = true;
 });
 builder.Services.AddAuthentication().AddGoogle(options =>
@@ -51,6 +54,20 @@ builder.Services.AddAuthentication().AddGoogle(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    string[] roles = { Roles.ADMIN_ROLE, Roles.USER_ROLE };
+
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
