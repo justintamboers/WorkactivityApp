@@ -237,6 +237,38 @@ namespace WorkactivityApp.Controllers
             return RedirectToAction("Index", "Project");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> RemoveUser(int projectId)
+        {
+            var project = await _context.Projects
+                                        .Include(p => p.Users)
+                                        .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+            if (project == null) return NotFound();
+
+            ViewData["ProjectId"] = projectId;
+            ViewData["Users"] = new SelectList(project.Users, "Id", "UserName");
+
+            return View("RemoveUserFromProject");
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveUserFromProject(int projectId, string userId)
+        {
+            var project = await _context.Projects
+                                        .Include(p => p.Users)
+                                        .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            if (project == null) return NotFound();
+            var user = project.Users.FirstOrDefault(u => u.Id == userId);
+            if (user != null)
+            {
+                project.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("Index", "Project");
+        }
 
         private bool ProjectExists(int id)
         {

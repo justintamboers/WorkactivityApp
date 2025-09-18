@@ -1,0 +1,23 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<h1>Delete User to Project</h1>
+
+<form asp-action="RemoveUserFromProject" asp-controller="Project" method="post">
+    <input type="hidden" name="projectId" value="@ViewData["ProjectId"]" />
+
+    <div class="form-group">
+        <label>Select User</label>
+        <select name="userId" class="form-control" asp-items="ViewBag.Users">
+            <option value="">-- Select a user --</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <input type="submit" value="Delete User Now" class="btn btn-primary" />
+        <a asp-action="Index" asp-controller="Project">Back to List</a>
+    </div>
+</form>
