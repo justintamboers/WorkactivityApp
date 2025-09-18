@@ -18,6 +18,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Email)
             </th>
+            <th>
+                Assigned Projects
+            </th>
           @*   <th>
                 @Html.DisplayNameFor(model => model.Password)
             </th> *@
@@ -32,6 +35,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                    @(item.Projects != null && item.Projects.Any() ? string.Join(", ", item.Projects.Select(u => u.ProjectName)) : "No projects")
             </td>
            @*  <td>
                 @Html.DisplayFor(modelItem => item.Password)

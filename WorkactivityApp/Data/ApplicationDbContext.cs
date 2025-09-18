@@ -21,6 +21,11 @@ namespace WorkactivityApp.Data
 
             modelBuilder.Entity<Project>().ToTable("projects");
 
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Projects)
+                .WithMany(p => p.Users)
+                .UsingEntity(j => j.ToTable("project_user"));
+
             modelBuilder.Entity<Project>()
                 .OwnsOne(p => p.Time, t =>
                 {

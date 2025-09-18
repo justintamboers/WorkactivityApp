@@ -4,6 +4,7 @@ namespace WorkactivityApp.Models
 {
     public class User : IdentityUser
     {
-        public string? ProjectId { get; set; }
+        public int? ProjectId { get; set; }
+        public ICollection<Project> Projects { get; set; } = new List<Project>();
     }
 }

@@ -26,7 +26,7 @@ namespace WorkactivityApp.Controllers
         // GET: User
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Users.ToListAsync());
+            return View(await _context.Users.Include(p => p.Projects).ToListAsync());
         }
 
         // GET: User/Details/5

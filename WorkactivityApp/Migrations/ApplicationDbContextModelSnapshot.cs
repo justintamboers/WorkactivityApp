@@ -154,6 +154,21 @@ namespace WorkactivityApp.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ProjectUser", b =>
+                {
+                    b.Property<int>("ProjectsProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UsersId")
+                        .HasColumnType("text");
+
+                    b.HasKey("ProjectsProjectId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("project_user", (string)null);
+                });
+
             modelBuilder.Entity("WorkactivityApp.Models.Project", b =>
                 {
                     b.Property<int>("ProjectId")
@@ -216,10 +231,7 @@ namespace WorkactivityApp.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ProjectId")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ProjectId1")
+                    b.Property<int?>("ProjectId")
                         .HasColumnType("integer");
 
                     b.Property<string>("SecurityStamp")
@@ -240,8 +252,6 @@ namespace WorkactivityApp.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
-
-                    b.HasIndex("ProjectId1");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -293,6 +303,21 @@ namespace WorkactivityApp.Migrations
                     b.HasOne("WorkactivityApp.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ProjectUser", b =>
+                {
+                    b.HasOne("WorkactivityApp.Models.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectsProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WorkactivityApp.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -356,18 +381,6 @@ namespace WorkactivityApp.Migrations
 
                     b.Navigation("Time")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("WorkactivityApp.Models.User", b =>
-                {
-                    b.HasOne("WorkactivityApp.Models.Project", null)
-                        .WithMany("Users")
-                        .HasForeignKey("ProjectId1");
-                });
-
-            modelBuilder.Entity("WorkactivityApp.Models.Project", b =>
-                {
-                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

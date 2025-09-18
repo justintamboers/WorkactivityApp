@@ -27,10 +27,10 @@ namespace WorkactivityApp.Controllers
 
 
         // GET: Project
-            public async Task<IActionResult> Index()
-            {
-                return View(await _context.Projects.ToListAsync());
-            }
+        public async Task<IActionResult> Index()
+        {
+            return View(await _context.Projects.Include(p => p.Users).ToListAsync());
+        }
 
         // GET: Project/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -109,7 +109,6 @@ namespace WorkactivityApp.Controllers
             {
                 try
                 {
-                    // Attach the project and mark it modified
                     _context.Attach(project);
                     _context.Entry(project).State = EntityState.Modified;
 
@@ -219,27 +218,25 @@ namespace WorkactivityApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser(int projectId, string userId)
+        public async Task<IActionResult> AddUserToProject(int projectId, string userId)
         {
-            var project = await _context.Projects
-                .Include(p => p.Users)
-                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
-
-            if (project == null)
-                return NotFound();
-
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            var project = await _context.Projects
+                                        .Include(p => p.Users)
+                                        .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+            if (user == null || project == null)
                 return NotFound();
 
-            if (!project.Users.Any(u => u.Id == user.Id))
+            if (!project.Users.Any(u => u.Id == userId))
             {
-                project.Users.Add((User)user);
+                project.Users.Add(user);
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Project");
         }
+
 
         private bool ProjectExists(int id)
         {
